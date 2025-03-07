@@ -15,7 +15,7 @@ The plugin supports two distance algorithms:
 
 The plugin adds an option to the **Vector** menu and an icon to the Plugins Toolbar. Launching the plugin opens a dialog box where you can configure the fuzzy join operation.
 
-![dialog box of the plugin](fig1.PNG "Dialog box")
+![dialog box of the plugin](fig1.png "Dialog box")
 
 ### Parameters
 
