@@ -50,25 +50,25 @@ A column named `joined_match` is also added, showing the computed match rate (1 
 
 ## Example
 
-We have two small tables with Hungarian postal addresses, containing some typos:
+We have two small tables with French postal addresses, containing some typos:
 
 ### Base table
 
-| id | txt                  |
-| -- | -------------------- |
-|  1 | Karcag utca 37.      |
-|  2 | Kunhegyes utca 2.    |
-|  3 | Derzsi utca 43       |
-|  4 | Szalóki utca 24.     |
+| id | adresse                 |
+| -- | ---------------------- |
+|  1 | 15 Rue de la Paix       |
+|  2 | 3 Avenue des Champs     |
+|  3 | 22 Boulevard Saint-Michel |
+|  4 | 8 Place de la République |
 
 ### Joined table
 
-| id | txt1                 |
-| -- | -------------------- |
-|  1 | Karczag utca 35.     |
-|  2 | KunHegyes u. 2       |
-|  3 | Derzs utca 40.       |
-|  4 | Szaloky utca 24.     |
+| id | adresse1                |
+| -- | ---------------------- |
+|  1 | 15 Rue de la Pais       |
+|  2 | 3 Av. des Champs        |
+|  3 | 22 Bd Saint Michel      |
+|  4 | 8 Pl. de la Republique  |
 
 ---
 
@@ -76,21 +76,21 @@ We have two small tables with Hungarian postal addresses, containing some typos:
 
 #### Damerau-Levenshtein with 85% match limit (case sensitive, inner join)
 
-| id | txt                  | joined_id | joined_txt1      | joined_match |
-| -- | -------------------- | --------- | ---------------- | ------------ |
-|  1 | Karcag utca 37.      | 1         | Karczag utca 35. | 0.875        |
-|  4 | Szalóki utca 24.     | 4         | Szaloky utca 24. | 0.875        |
+| id | adresse                 | joined_id | joined_adresse1      | joined_match |
+| -- | ---------------------- | --------- | ------------------ | ------------ |
+|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.952        |
+|  4 | 8 Place de la République | 4         | 8 Pl. de la Republique | 0.875        |
 
 ---
 
 #### Jaro-Winkler with 85% match limit (case insensitive, outer join)
 
-| id | txt                  | joined_id | joined_txt1      | joined_match |
-| -- | -------------------- | --------- | ---------------- | ------------ |
-|  1 | Karcag utca 37.      | 1         | Karczag utca 35. | 0.912        |
-|  2 | Kunhegyes utca 2.    | 2         | KunHegyes u. 2   | 0.893        |
-|  3 | Derzsi utca 43       | 3         | Derzs utca 40.   | 0.875        |
-|  4 | Szalóki utca 24.     | 4         | Szaloky utca 24. | 0.908        |
+| id | adresse                 | joined_id | joined_adresse1      | joined_match |
+| -- | ---------------------- | --------- | ------------------ | ------------ |
+|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.975        |
+|  2 | 3 Avenue des Champs     | 2         | 3 Av. des Champs    | 0.956        |
+|  3 | 22 Boulevard Saint-Michel | 3     | 22 Bd Saint Michel  | 0.912        |
+|  4 | 8 Place de la République | 4     | 8 Pl. de la Republique | 0.875        |
 
 ---
 
