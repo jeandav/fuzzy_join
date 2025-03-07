@@ -1,97 +1,118 @@
 # Fuzzy Join Tables
 
-Plugin for QGIS to join two tables based on maximal fuzzy match.
+Plugin for QGIS to join two tables on maximal fuzzy match.
 
-## Algorithms
+Using fuzzy join we can join tables on inexact match. It can be used to
+find matching records even spelling errors are present. The result is a memory layer
+which has the geometry of the first layer (if there is any) and the attributes 
+from both layers plus the match rate.
 
-The plugin supports two distance algorithms:
-
-- **Damerau-Levenshtein Distance**: Measures the number of single-character edits needed to change one string into the other. It considers insertions, deletions, substitutions, and adjacent character transpositions. 
-  See: [Damerau-Levenshtein Distance](https://en.wikipedia.org/wiki/Damerau-Levenshtein_distance)
-- **Jaro-Winkler Distance**: For comparing short strings, particularly effective for matching names. It gives more weight to initial character matches and handles small typos also. 
-  See: [Jaro-Winkler Distance](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance)
+This plugin uses Damerau-Levenshtein edit distance, see
+https://en.wikipedia.org/wiki/Damerau-Levenshtein_distance. QGIS has a
+Levenshtein distance function which considers insert, delete and replace
+operations. Damerau-Levenshtein distance adds a fourth operation the
+transposition when the order of the adjecent vharacters is wrong (e.g.
+hte -> the).
 
 ## Usage
 
-The plugin adds an option to the **Vector** menu and an icon to the Plugins Toolbar. Launching the plugin opens a dialog box where you can configure the fuzzy join operation.
+The plugin adds an option to the **Vector** menu and an icon to the
+Plugins Toolbar. Starting the plugin an dialog box apears on the screen.
 
 ![dialog box of the plugin](fig1.png "Dialog box")
 
-### Parameters
+**Base layer/Table**
 
-- **Base layer/Table** 
-  Select the vector layer or table to join to, from the dropdown list.
+> The name of the vector layer or table to join to, select from the pull down list
 
-- **Base column** 
-  Select the field to join to. All comparisons are performed as strings.
+**Base column**
 
-- **Joined layer/Table** 
-  Select the layer or table to join with the base layer.
+> Select the field to join to, you can use any type of column, but the plugin will make string comparison of values
 
-- **Joined column** 
-  Select the field to match against the base column.
+**Joined layer/table**
 
-- **Distance algorithm** 
-  Choose either *Damerau-Levenshtein* or *Jaro-Winkler* for the fuzzy match.
+> The name of the layer or table to join to the base table, select from the pull down list
 
-- **Match limit (%)** 
-  Set the minimum acceptable match rate (0-100%).
+**Joined column**
 
-- **Ignore case** 
-  If checked, the comparison will be case insensitive.
+> Select the field to join to base column, you can use any type of column, but the plugin will make string comparison of values
 
-- **Outer join** 
-  If checked, a left outer join is performed — all rows from the base table will appear in the result, even if no match is found in the joined table.
+**Match limit (%)**
 
-Pressing **OK** will create a new memory layer called *FuzzyJoin*. This layer contains the base layer's geometry (if present) and attributes from both tables. The joined table’s attributes are prefixed with `joined_` to avoid name conflicts. 
-A column named `joined_match` is also added, showing the computed match rate (1 for a perfect match).
+> Set the acceptable match rate in percents
 
----
+**Ignore case**
 
-## Example
+> If checked a case insensitive compare of strings will be used
 
-We have two small tables with French postal addresses, containing some typos:
+**Outter join**
 
-### Base table
+> If checked a left outer join will be created, all rows from the base table will be coppied to the result table even no matching record found in joined layer/table
 
-| id | adresse                 |
-| -- | ---------------------- |
-|  1 | 15 Rue de la Paix       |
-|  2 | 3 Avenue des Champs     |
-|  3 | 22 Boulevard Saint-Michel |
-|  4 | 8 Place de la République |
+Pressing the **OK** buttom a new memory layer is added to the layer list, called
+*FuzzyJoin*. The features of the layer inherit the geometry from the base layer
+and have attributes from both tables. The column names of the joined table are
+changed by adding *joined_* prefix to avoid duplicate column names.
+An extra column is added called 
+*joined_match*, which stores the matching ratio (1 is the perfect match).
 
-### Joined table
+## An example
 
-| id | adresse1                |
-| -- | ---------------------- |
-|  1 | 15 Rue de la Pais       |
-|  2 | 3 Av. des Champs        |
-|  3 | 22 Bd Saint Michel      |
-|  4 | 8 Pl. de la Republique  |
+We have two small tables both containing postal adresses (from Hungary)
+with spalling mistakes.
 
----
+**Base table**
 
-### Example results
+| id | txt                  |
+| -- | -------------------- |
+|  1 | Karcag utca 37.      |
+|  2 | Kunhegyes utca 2.    |
+|  3 | Derzsi utca 43       |
+|  4 | Szalóki utca 24.     |
 
-#### Damerau-Levenshtein with 85% match limit (case sensitive, inner join)
+**Joined table**
 
-| id | adresse                 | joined_id | joined_adresse1      | joined_match |
-| -- | ---------------------- | --------- | ------------------ | ------------ |
-|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.952        |
-|  4 | 8 Place de la République | 4         | 8 Pl. de la Republique | 0.875        |
+| id | txt1                 |
+| -- | -------------------- |
+|  1 | Karczag utca 35.     |
+|  2 | KunHegyes u. 2       |
+|  3 | Derzs utca 40.       |
+|  4 | Szaloky utca 24.     |
 
----
+Fuzzy joining the the two tables using txt and txt1 columns with 85%
+limit, case sensitive inner join, we get the following table:
 
-#### Jaro-Winkler with 85% match limit (case insensitive, outer join)
+| id | txt                  | joined_id | joined_txt1      | joined_match |
+| -- | -------------------- | --------- | ---------------- | ------------ |
+|  1 | Karcag utca 37.      |         1 | Karczag utca 35. | 0.875        |
+|  4 | Szalóki utca 24.     |         4 | Szaloky utca 24. | 0.875        |
 
-| id | adresse                 | joined_id | joined_adresse1      | joined_match |
-| -- | ---------------------- | --------- | ------------------ | ------------ |
-|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.975        |
-|  2 | 3 Avenue des Champs     | 2         | 3 Av. des Champs    | 0.956        |
-|  3 | 22 Boulevard Saint-Michel | 3     | 22 Bd Saint Michel  | 0.912        |
-|  4 | 8 Place de la République | 4     | 8 Pl. de la Republique | 0.875        |
+Fuzzy joining the the two tables using txt and txt1 columns with
+85% limit, case sensitive left outer join, we get the following table:
 
----
+| id | txt                  | joined_id | joined_txt1      | joined_match |
+| -- | -------------------- | --------- | ---------------- | ------------ |
+|  1 | Karcag utca 37.      |         1 | Karczag utca 35. | 0.875        |
+|  2 | Kunhegyes utca 2.    |           |                  | 0.706        |
+|  3 | Derzsi utca 43       |           |                  | 0.786        |
+|  4 | Szalóki utca 24.     |         4 | Szaloky utca 24. | 0.875        |
 
-This flexibility makes the plugin useful in a variety of data integration tasks, such as merging address lists from different sources, resolving typos in names, and general data cleaning workflows.
+Fuzzy joining the the two tables using txt and txt1 columns with
+75% limit, case sensitive left outer join, we get the following table:
+
+| id | txt                  | joined_id | joined_txt1      | joined_match |
+| -- | -------------------- | --------- | ---------------- | ------------ |
+|  1 | Karcag utca 37.      |         1 | Karczag utca 35. | 0.875        |
+|  2 | Kunhegyes utca 2.    |           |                  | 0.706        |
+|  3 | Derzsi utca 43       |         3 | Derzs utca 40.   | 0.786        |
+|  4 | Szalóki utca 24.     |         4 | Szaloky utca 24. | 0.875        |
+
+Fuzzy joining the the two tables using txt and txt1 columns with
+75% limit, case insensitive left outer join, we get the following table:
+
+| id | txt                  | joined_id | joined_txt1      | joined_match |
+| -- | -------------------- | --------- | ---------------- | ------------ |
+|  1 | Karcag utca 37.      |         1 | Karczag utca 35. | 0.875        |
+|  2 | Kunhegyes utca 2.    |         2 | KunHegyes u. 2   | 0.765        |
+|  3 | Derzsi utca 43       |         3 | Derzs utca 40.   | 0.786        |
+|  4 | Szalóki utca 24.     |         4 | Szaloky utca 24. | 0.875        |

@@ -26,6 +26,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsWkbTypes, QgsVectorLayer, QgsProject, QgsFeature, QgsFields, QgsField
 from .damlevdist import damerau_levenshtein_distance
+from .jaro_winkler import jaro_winkler_distance
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -190,11 +191,16 @@ class FuzzyJoin:
         if self.first_start == True:
             self.first_start = False
             self.dlg = FuzzyJoinDialog()
-
+        
+        self.dlg.typeAlgo.clear()
+        self.dlg.typeAlgo.addItems(
+                ['Damerau-Levenshtein','Jaro-Winkler'])
+        
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
+
         # See if OK was pressed
         if result:
             if len(self.dlg.baseCombo.currentText()) == 0 or \
@@ -228,6 +234,7 @@ class FuzzyJoin:
             fuzzyAttr.append(QgsField("joined_match", QVariant.Double))
             fuzzyData.addAttributes(fuzzyAttr)
             fuzzyLayer.updateFields()
+
             # go through layer sequentialy to find best join
             for baseFeature in baseLayer.getFeatures():
                 baseVal = str(baseFeature.attributes()[baseIndex])
@@ -239,7 +246,7 @@ class FuzzyJoin:
                     joinedVal = str(joinedFeature.attributes()[joinedIndex])
                     if ignoreCase:
                         joinedVal = joinedVal.lower()
-                    _, actMatch = damerau_levenshtein_distance(baseVal, joinedVal)
+                    _, actMatch = self.perform_join(baseVal, joinedVal)
                     if actMatch > maxMatch:
                         maxMatch = actMatch
                         maxAttr = joinedFeature.attributes()
@@ -256,3 +263,12 @@ class FuzzyJoin:
                             feat.setAttribute(name, attr)
                     feat.setAttribute("joined_match", maxMatch)
                     fuzzyData.addFeatures([feat])
+
+    def perform_join(self, string1, string2):
+        selected_algo = self.dlg.typeAlgo.currentText()
+        if selected_algo == 'Damerau-Levenshtein':
+            return damerau_levenshtein_distance(string1, string2)
+        elif selected_algo == 'Jaro-Winkler':
+            return jaro_winkler_distance(string1, string2)
+        else:
+            raise ValueError("Unsupported algorithm selected")
