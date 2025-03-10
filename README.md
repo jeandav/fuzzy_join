@@ -74,23 +74,22 @@ We have two small tables with French postal addresses, containing some typos:
 
 ### Example results
 
-#### Damerau-Levenshtein with 85% match limit (case sensitive, inner join)
+#### Damerau-Levenshtein with 85% match limit (case insensitive, inner join)
 
-| id | adresse                 | joined_id | joined_adresse1      | joined_match |
+| id | txt                 | joined_id | joined_txt1      | joined_match |
 | -- | ---------------------- | --------- | ------------------ | ------------ |
-|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.952        |
-|  4 | 8 Place de la République | 4         | 8 Pl. de la Republique | 0.875        |
+|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.941        |
 
 ---
 
-#### Jaro-Winkler with 85% match limit (case insensitive, outer join)
+#### Jaro-Winkler with 85% match limit (case insensitive, inner join)
 
-| id | adresse                 | joined_id | joined_adresse1      | joined_match |
+| id | txt                 | joined_id | joined_txt1      | joined_match |
 | -- | ---------------------- | --------- | ------------------ | ------------ |
-|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.975        |
-|  2 | 3 Avenue des Champs     | 2         | 3 Av. des Champs    | 0.956        |
-|  3 | 22 Boulevard Saint-Michel | 3     | 22 Bd Saint Michel  | 0.912        |
-|  4 | 8 Place de la République | 4     | 8 Pl. de la Republique | 0.875        |
+|  1 | 15 Rue de la Paix       | 1         | 15 Rue de la Pais   | 0.976        |
+|  2 | 3 Avenue des Champs     | 2         | 3 Av. des Champs    | 0.921        |
+|  3 | 22 Boulevard Saint-Michel | 3     | 22 Bd Saint Michel  | 0.854        |
+|  4 | 8 Place de la République | 4     | 8 Pl. de la Republique | 0.928        |
 
 ---
 
